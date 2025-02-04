@@ -31,6 +31,7 @@ Para ESP32:
 
 1. Asegúrese que su ESP32 tenga el siguiente código base:
 
+```
 cpp
 #include "BluetoothSerial.h"
 BluetoothSerial SerialBT;
@@ -54,6 +55,8 @@ SerialBT.println("Led1_Off");
 }
 }
 }
+
+```
 
 2. Verifique que el ESP32 aparezca en el escaneo de dispositivos
 3. El nombre por defecto será "ESP32-BT"
