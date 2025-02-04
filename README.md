@@ -31,31 +31,34 @@ Para ESP32:
 
 1. Asegúrese que su ESP32 tenga el siguiente código base:
 
-```
-cpp
+```cpp
 #include "BluetoothSerial.h"
+
 BluetoothSerial SerialBT;
+
 void setup() {
-Serial.begin(115200);
-SerialBT.begin("ESP32-BT"); // Nombre que aparecerá en el escaneo
-// Ejemplo de comando LED
-pinMode(2, OUTPUT);
-}
-void loop() {
-if (SerialBT.available()) {
-String command = SerialBT.readStringUntil('\n');
-command.trim();
-if (command == "1") {
-digitalWrite(2, HIGH);
-SerialBT.println("Led1_On");
-}
-else if (command == "0") {
-digitalWrite(2, LOW);
-SerialBT.println("Led1_Off");
-}
-}
+    Serial.begin(115200);
+    SerialBT.begin("ESP32-BT"); // Nombre que aparecerá en el escaneo
+    
+    // Ejemplo de comando LED
+    pinMode(2, OUTPUT);
 }
 
+void loop() {
+    if (SerialBT.available()) {
+        String command = SerialBT.readStringUntil('\n');
+        command.trim();
+        
+        if (command == "1") {
+            digitalWrite(2, HIGH);
+            SerialBT.println("Led1_On");
+        }
+        else if (command == "0") {
+            digitalWrite(2, LOW);
+            SerialBT.println("Led1_Off");
+        }
+    }
+}
 ```
 
 2. Verifique que el ESP32 aparezca en el escaneo de dispositivos
@@ -162,4 +165,3 @@ La aplicación incluye un dispositivo simulado para pruebas sin hardware real:
    - Asegúrese que ambos dispositivos estén en la misma red
    - Intente reiniciar Android Studio
    - Verifique la configuración del firewall
-
