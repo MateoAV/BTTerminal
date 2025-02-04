@@ -1,5 +1,6 @@
 package edu.unal.btterminal.adapter
 
+import android.annotation.SuppressLint
 import android.bluetooth.BluetoothDevice
 import android.view.LayoutInflater
 import android.view.View
@@ -23,28 +24,24 @@ class BluetoothDeviceAdapter(
         val address: String = ""
     )
 
-    init {
-        // Add mock device at initialization
-        addMockDevice()
-    }
-
-    private fun addMockDevice() {
-        devices.add(0, DeviceItem(
-            device = null,
-            isMock = true,
-            name = MockDeviceWrapper.MOCK_NAME,
-            address = MockDeviceWrapper.MOCK_ADDRESS
-        ))
-        deviceAddresses.add(MockDeviceWrapper.MOCK_ADDRESS)
-        notifyItemInserted(0)
-    }
-
+    @SuppressLint("NotifyDataSetChanged")
     fun clear() {
         devices.clear()
         deviceAddresses.clear()
         notifyDataSetChanged()
-        // Re-add mock device after clearing
+        // Add mock device after clearing when scanning starts
         addMockDevice()
+    }
+
+    private fun addMockDevice() {
+        devices.add(DeviceItem(
+            device = null,
+            isMock = true,
+            name = "${MockDeviceWrapper.MOCK_NAME} (MOCK DEVICE - NOT REAL DEVICE)",
+            address = MockDeviceWrapper.MOCK_ADDRESS
+        ))
+        deviceAddresses.add(MockDeviceWrapper.MOCK_ADDRESS)
+        notifyItemInserted(devices.size - 1)
     }
 
     fun addDevice(device: BluetoothDevice) {
@@ -86,6 +83,13 @@ class BluetoothDeviceAdapter(
         internal fun bind(deviceItem: DeviceItem) {
             deviceName.text = deviceItem.name
             deviceAddress.text = deviceItem.address
+
+            // Set different background for mock device
+            if (deviceItem.isMock) {
+                itemView.setBackgroundColor(0x1FFF0000) // Light red background
+            } else {
+                itemView.setBackgroundColor(0x00000000) // Transparent background
+            }
 
             itemView.setOnClickListener {
                 onDeviceClick(deviceItem.device)

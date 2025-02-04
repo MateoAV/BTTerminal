@@ -1,5 +1,6 @@
 package edu.unal.btterminal.bluetooth
 
+import android.annotation.SuppressLint
 import android.bluetooth.BluetoothAdapter
 import android.bluetooth.BluetoothDevice
 import android.bluetooth.BluetoothManager
@@ -8,12 +9,9 @@ import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
-import android.content.pm.PackageManager
 import android.util.Log
 import java.io.IOException
 import java.util.UUID
-import android.Manifest
-import androidx.core.content.ContextCompat
 import edu.unal.btterminal.PermissionManager
 import edu.unal.btterminal.utils.LineEnding
 
@@ -23,6 +21,7 @@ class BTManager private constructor(private val context: Context) {
         // Standard SerialPortService ID
         private val UUID_SPP = UUID.fromString("00001101-0000-1000-8000-00805F9B34FB")
         
+        @SuppressLint("StaticFieldLeak")
         @Volatile
         private var instance: BTManager? = null
         
@@ -146,7 +145,7 @@ class BTManager private constructor(private val context: Context) {
             // Cancel any ongoing discovery
             if (bluetoothAdapter?.isDiscovering == true) {
                 Log.d(TAG, "Canceling ongoing discovery...")
-                bluetoothAdapter?.cancelDiscovery()
+                bluetoothAdapter.cancelDiscovery()
             }
 
             // Start new discovery
@@ -167,7 +166,7 @@ class BTManager private constructor(private val context: Context) {
         
         try {
             if (bluetoothAdapter?.isDiscovering == true) {
-                bluetoothAdapter?.cancelDiscovery()
+                bluetoothAdapter.cancelDiscovery()
                 Log.d(TAG, "Discovery cancelled")
             }
         } catch (e: SecurityException) {
@@ -182,6 +181,7 @@ class BTManager private constructor(private val context: Context) {
             connectionCallback = callback
             currentSocket = null
             isMockDevice = true
+            isReceiving = true // Set receiving flag for mock device
             // Simulate successful connection
             connectionCallback?.invoke(true)
             return
@@ -237,11 +237,15 @@ class BTManager private constructor(private val context: Context) {
 
     fun sendData(data: String, lineEnding: LineEnding): Boolean {
         if (isMockDevice && messageCallback != null) {
-            // Mock device connection - echo the message back
-            Log.d(TAG, "Mock device echoing: $data")
+            // Mock device connection - handle LED messages
+            Log.d(TAG, "Mock device received: $data")
             Thread {
-                Thread.sleep(500) // Simulate network delay
-                messageCallback?.invoke("Echo: $data")
+                Thread.sleep(100) // Small delay to simulate device processing
+                when (data.trim()) {
+                    "1" -> messageCallback?.invoke("Led1_On")
+                    "0" -> messageCallback?.invoke("Led1_Off")
+                    else -> messageCallback?.invoke("Echo: $data") // Default echo for other messages
+                }
             }.start()
             return true
         }
@@ -280,8 +284,8 @@ class BTManager private constructor(private val context: Context) {
         isReceiving = true
 
         if (isMockDevice) {
-            Log.d(TAG, "Mock device - no need to start receiving thread")
-            return
+            Log.d(TAG, "Mock device receiver initialized")
+            return // For mock device, we just store the callback
         }
 
         // Real device communication

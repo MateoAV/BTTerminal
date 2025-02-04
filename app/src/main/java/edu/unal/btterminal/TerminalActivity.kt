@@ -1,6 +1,4 @@
 package edu.unal.btterminal
-
-import android.bluetooth.BluetoothDevice
 import android.os.Bundle
 import android.view.View
 import android.widget.Button
@@ -26,19 +24,9 @@ class TerminalActivity : AppCompatActivity() {
     private lateinit var spinnerLineEnding: Spinner
     private var selectedLineEnding = LineEnding.CRLF
 
-    companion object {
-        const val EXTRA_DEVICE = "extra_device"
-    }
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_terminal)
-
-        if (btManager.currentSocket == null) {
-            Toast.makeText(this, "No active Bluetooth connection", Toast.LENGTH_SHORT).show()
-            finish()
-            return
-        }
 
         // Initialize views
         rvMessages = findViewById(R.id.rvMessages)
@@ -66,17 +54,17 @@ class TerminalActivity : AppCompatActivity() {
         val adapter = ArrayAdapter(
             this,
             android.R.layout.simple_spinner_item,
-            LineEnding.values().map { it.displayName }
+            LineEnding.entries.map { it.displayName }
         ).apply {
             setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
         }
 
         spinnerLineEnding.adapter = adapter
-        spinnerLineEnding.setSelection(LineEnding.values().indexOf(LineEnding.CRLF))
+        spinnerLineEnding.setSelection(LineEnding.entries.indexOf(LineEnding.CRLF))
         
         spinnerLineEnding.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
             override fun onItemSelected(parent: AdapterView<*>?, view: View?, position: Int, id: Long) {
-                selectedLineEnding = LineEnding.values()[position]
+                selectedLineEnding = LineEnding.entries.toTypedArray()[position]
             }
 
             override fun onNothingSelected(parent: AdapterView<*>?) {
